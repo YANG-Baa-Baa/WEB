@@ -1,4 +1,4 @@
-name: Deploy (GitHub default domain)
+name: Deploy (Custom domain)
 
 on:
   push:
@@ -17,8 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # 自定义域名必须是 "/"
     env:
-      VITE_BASE: "/WEB/"   # 👈 让 Vite 以仓库子路径打包
+      VITE_BASE: "/" 
     steps:
       - uses: actions/checkout@v4
 
@@ -27,21 +28,23 @@ jobs:
           node-version: 20
           cache: "npm"
 
-      - run: npm install
+      - run: npm ci
       - run: npm run build
 
-      # SPA 刷新 404 & 关闭 jekyll
-      - run: cp dist/static/index.html dist/static/404.html
-      - run: touch dist/static/.nojekyll
+      # SPA 刷新直达路由回退
+      - run: cp dist/index.html dist/404.html
+      - run: touch dist/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/static
+          path: dist    # ⚠️ 这里是 dist，不是 dist/static
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/deploy-pages@v4
+      - id: deploy
+        uses: actions/deploy-pages@v4
