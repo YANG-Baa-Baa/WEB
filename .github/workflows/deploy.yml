@@ -1,4 +1,4 @@
-name: Deploy (Custom domain)
+name: Deploy to GitHub Pages (dist/static version)
 
 on:
   push:
@@ -17,34 +17,44 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # 自定义域名必须是 "/"
     env:
-      VITE_BASE: "/" 
+      # ✅ 自定义域名必须用 "/"
+      VITE_BASE: "/"
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "npm"
 
-      - run: npm ci
-      - run: npm run build
+      - name: Install dependencies
+        run: npm ci
 
-      # SPA 刷新直达路由回退
-      - run: cp dist/index.html dist/404.html
-      - run: touch dist/.nojekyll
+      - name: Build Vite project
+        run: npm run build
 
-      - uses: actions/upload-pages-artifact@v3
+      # ✅ SPA 刷新路由回退 & 禁止 Jekyll
+      - name: Add SPA fallback & disable Jekyll
+        run: |
+          cp dist/static/index.html dist/static/404.html
+          touch dist/static/.nojekyll
+
+      # ✅ 上传打包后的静态文件（dist/static）
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: dist    # ⚠️ 这里是 dist，不是 dist/static
+          path: dist/static
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deploy
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
