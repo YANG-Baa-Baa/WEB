@@ -4,10 +4,11 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev:client": "vite --host --port 3000",
-    "dev": "pnpm dev:client",
-    "build:client": "vite build --outDir dist/static",
-    "build": "rm -rf dist && pnpm build:client && cp package.json dist && touch dist/build.flag"
+    "dev": "vite --host --port 3000",
+    "build": "vite build --outDir dist/static",
+    "preview": "vite preview",
+    "deploy:gh": "echo \"Use GitHub Actions: deploy-gh.yml\"",
+    "deploy:domain": "echo \"Use GitHub Actions: deploy-domain.yml\""
   },
   "dependencies": {
     "clsx": "^2.1.1",

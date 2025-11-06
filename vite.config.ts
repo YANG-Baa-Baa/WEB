@@ -11,7 +11,10 @@ function getPlugins() {
   return plugins;
 }
 
+// 由 GitHub Actions 注入：/WEB/（GitHub 默认） 或 /（自定义域名）
+const BASE = process.env.VITE_BASE || "/";
+
 export default defineConfig({
   plugins: getPlugins(),
-  base: "/WEB/", // ✅ 仓库名要对应 /WEB/
+  base: BASE
 });
