@@ -13,4 +13,5 @@ function getPlugins() {
 
 export default defineConfig({
   plugins: getPlugins(),
+  base: "/WEB/", // ✅ 仓库名要对应 /WEB/
 });
