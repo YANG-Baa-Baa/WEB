@@ -1,0 +1,54 @@
+name: Deploy Vite React to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 使用 pnpm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      # 安装依赖并构建（遵循你的 scripts，产物到 dist/static）
+      - run: pnpm i --frozen-lockfile || pnpm i
+      - run: pnpm build
+
+      # GitHub Pages + SPA 刷新支持 + 自定义域名
+      - run: echo knive.online > dist/static/CNAME
+      - run: cp dist/static/index.html dist/static/404.html
+      - run: touch dist/static/.nojekyll
+
+      # 上传静态产物（注意目录是 dist/static）
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/static
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4
