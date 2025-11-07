@@ -30,17 +30,14 @@ interface LinksProviderProps {
   children: ReactNode;
 }
 
-/** ====== 云端 API（阿里云 FC） ====== */
-const API = 'https://links-api-gtmukooqat.cn-shenzhen.fcapp.run'; // 你的 FC 地址（HTTPS）
-const WRITE_KEY = 'my-public-write-key'; // 若 FC 未启用写入校验，可设为 '' 或删除
+/** ====== 云端 API（Cloudflare Tunnel） ====== */
+const API = 'https://api.knive.online'; // 你的固定公网 HTTPS API
 const h = (method: string, body?: any) => ({
   method,
-  headers: {
-    'Content-Type': 'application/json',
-    ...(WRITE_KEY ? { 'x-write-key': WRITE_KEY } : {}),
-  },
+  headers: { 'Content-Type': 'application/json' },
   ...(body ? { body: JSON.stringify(body) } : {}),
 });
+
 const normalize = (row: any): LinkItem => ({
   id: String(row.id),
   url: row.url,
@@ -191,7 +188,10 @@ export const LinksProvider = ({ children }: LinksProviderProps) => {
       const res2 = await fetch(`${API}/links`);
       setLinks((await res2.json()).map(normalize));
       toast.success(`成功导入 ${arr.length} 个链接`);
-    } catch (e) { console.error(e); toast.error('导入失败'); }
+    } catch (e) {
+      console.error(e);
+      toast.error('导入失败');
+    }
   };
 
   /** 导出（当前列表快照） */
